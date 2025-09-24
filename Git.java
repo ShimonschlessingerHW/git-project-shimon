@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -62,9 +63,17 @@ public class Git {
         return sb.toString();
     }
 
-    public static String hashFile(String filePath, String fileName){
+    public static void writeToFile(String filePath, String fileName, String content){
+        String path = getPath(filePath, fileName);
+        try (FileWriter writer = new FileWriter(path)) {
+            writer.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String hash(String content){
         try {
-            String content = readFile(filePath, fileName);
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
             byte[] hashBytes = digest.digest(content.getBytes(StandardCharsets.UTF_8)); //these two lines googled from library
             StringBuilder hex = new StringBuilder();
@@ -76,6 +85,10 @@ public class Git {
         } catch (Exception e) {
         }
         return null;
+    }
+
+    public static String hashFile(String filePath, String fileName){
+        return hash(readFile(filePath, fileName));
     }
     
     public static void intializeRepo(){
@@ -89,8 +102,17 @@ public class Git {
         makeFile("git/objects", "HEAD");
         System.out.println("Git Repository Created");
     }
+
+    public static void blobify(String filePath, String fileName){
+        String content = readFile(filePath, fileName);
+        String hash = hash(content);
+        makeFile("git/objects", hash);
+        writeToFile("git/objects", hash, content);
+    }
+
     public static void main(String[] args){
         intializeRepo();
         System.out.println(hashFile("git/objects", "index"));
+        blobify("git/objects", "index");
     }
 }

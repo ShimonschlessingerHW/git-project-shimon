@@ -12,4 +12,13 @@ Initialize Repo: If they don't exist, makes a "git" directory containing an "obj
 
 GP 2.2
 
+Hash: Outputs the SHA1 hash from the String representing data.
 Hash File: Outputs the SHA1 hash from the relevant file path.
+
+--
+
+GP 2.3
+
+Write to File: Takes filePath and string and writes data to the file.
+
+Blobbify: Takes filePath to a file with data and makes BLOB file: in object folder, have a BLOB file whose name is its hash with its contents.
