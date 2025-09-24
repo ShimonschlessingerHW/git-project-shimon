@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
+
 public class Git {
     public static String getPath(String filePath, String folderName){
         return (filePath == null ? "" : filePath + "/") + folderName;
@@ -14,34 +15,62 @@ public class Git {
     public static boolean directoryExists(String filePath, String folderName){
         String path = getPath(filePath, folderName);
         File newDir = new File(path);
-        return newDir.exists();
+        return newDir.exists() && newDir.isDirectory();
     }
 
     public static boolean fileExists(String filePath, String fileName){
         String path = getPath(filePath, fileName);
         File f = new File(path);
-        return f.exists();
+        return f.exists() && f.isFile();
     }
 
     public static void makeDirectory(String filePath, String folderName){
         if (directoryExists(filePath, folderName)){
             return;
         }
-        String path = (filePath == null ? "" : filePath + "/") + folderName;
+        String path = getPath(filePath, folderName);
         File newDir = new File(path);
         newDir.mkdir();
+    }
+
+    private static void deleteDirectory(File file)
+    {
+        for (File subfile : file.listFiles()) {
+            if (subfile.isDirectory()) {
+                deleteDirectory(subfile);
+            }
+            subfile.delete();
+        }
+        file.delete();
+    }
+
+    public static void deleteDirectory(String filePath, String folderName){
+        if (!directoryExists(filePath, folderName)){
+            return;
+        }
+        String path = getPath(filePath, folderName);
+        File dir = new File(path);
+        deleteDirectory(dir);
     }
 
     public static void makeFile(String filePath, String fileName){
         if (fileExists(filePath, fileName)){
             return;
         }
-        String path = (filePath == null ? "" : filePath + "/") + fileName;
+        String path = getPath(filePath, fileName);
         File f = new File(path);
         try {
             f.createNewFile();
         } catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    public static void deleteFile(String filePath, String fileName){
+        if (fileExists(filePath, fileName)){
+            String path = getPath(filePath, fileName);
+            File f = new File(path);
+            f.delete();
         }
     }
 
@@ -93,14 +122,19 @@ public class Git {
     
     public static void intializeRepo(){
         if (fileExists("git/objects", "index") && fileExists("git/objects", "HEAD")){
-            System.out.println("Git Repository Already Exists");
             return;
         }
+        deleteFile(null, "git"); //in case "cloggs" options
         makeDirectory(null, "git");
+
+        deleteFile("git", "objects"); //in case "cloggs" options
         makeDirectory("git", "objects");
+
+        deleteDirectory("git", "index"); //in case "cloggs" options
         makeFile("git/objects", "index");
+
+        deleteDirectory("git", "HEAD"); //in case "cloggs" options
         makeFile("git/objects", "HEAD");
-        System.out.println("Git Repository Created");
     }
 
     public static void blobify(String filePath, String fileName){
