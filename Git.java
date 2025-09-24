@@ -1,14 +1,23 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 public class Git {
+    public static String getPath(String filePath, String folderName){
+        return (filePath == null ? "" : filePath + "/") + folderName;
+    }
+
     public static boolean directoryExists(String filePath, String folderName){
-        String path = (filePath == null ? "" : filePath + "/") + folderName;
+        String path = getPath(filePath, folderName);
         File newDir = new File(path);
         return newDir.exists();
     }
 
     public static boolean fileExists(String filePath, String fileName){
-        String path = (filePath == null ? "" : filePath + "/") + fileName;
+        String path = getPath(filePath, fileName);
         File f = new File(path);
         return f.exists();
     }
@@ -34,6 +43,40 @@ public class Git {
             e.printStackTrace();
         }
     }
+
+    public static String readFile(String filePath, String fileName){
+        String path = getPath(filePath, fileName);
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+                sb.append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (sb.length() > 1){
+            sb.deleteCharAt(sb.length() - 1); //remove terminator
+        }
+        return sb.toString();
+    }
+
+    public static String hashFile(String filePath, String fileName){
+        try {
+            String content = readFile(filePath, fileName);
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            byte[] hashBytes = digest.digest(content.getBytes(StandardCharsets.UTF_8)); //these two lines googled from library
+            StringBuilder hex = new StringBuilder();
+            for (byte b : hashBytes) {
+                hex.append(String.format("%02x", b));
+            }
+            return hex.toString();
+
+        } catch (Exception e) {
+        }
+        return null;
+    }
     
     public static void intializeRepo(){
         if (fileExists("git/objects", "index") && fileExists("git/objects", "HEAD")){
@@ -48,5 +91,6 @@ public class Git {
     }
     public static void main(String[] args){
         intializeRepo();
+        System.out.println(hashFile("git/objects", "index"));
     }
 }
