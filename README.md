@@ -22,3 +22,10 @@ GP 2.3
 Write to File: Takes filePath and string and writes data to the file.
 
 Blobbify: Takes filePath to a file with data and makes BLOB file: in object folder, have a BLOB file whose name is its hash with its contents.
+
+--
+
+GP 2.1.1
+
+intializationTester: Run to test if Git.initializeRepo() works correctly.
+Fixed a bug in initializeRepo to ensure that if, e.g, a file were named "objects," it would be replaced by the directory "objects" as desired
