@@ -29,3 +29,9 @@ GP 2.1.1
 
 intializationTester: Run to test if Git.initializeRepo() works correctly.
 Fixed a bug in initializeRepo to ensure that if, e.g, a file were named "objects," it would be replaced by the directory "objects" as desired
+
+--
+
+GP 2.2.1
+
+hashTester: tests various different file value on the "index" file and running the hashFile method on it.
