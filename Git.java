@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -101,6 +102,16 @@ public class Git {
         }
     }
 
+    public static void appendToFile(String filePath, String fileName, String content){
+        String path = getPath(filePath, fileName);
+        try (FileWriter fw = new FileWriter(path, true); 
+            BufferedWriter bw = new BufferedWriter(fw)) {
+            bw.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static String hash(String content){
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
@@ -121,7 +132,9 @@ public class Git {
     }
     
     public static void intializeRepo(){
-        if (fileExists("git/objects", "index") && fileExists("git/objects", "HEAD")){
+        if (fileExists("git/objects", "index") && fileExists("git/objects", "HEAD") 
+        && directoryExists("git", "objects") && directoryExists(null, "git")){
+            System.out.println("Git Repository Already Exists");
             return;
         }
         deleteFile(null, "git"); //in case "cloggs" options
@@ -144,9 +157,29 @@ public class Git {
         writeToFile("git/objects", hash, content);
     }
 
+    public static boolean alreadyIndexed(String indexEntry){
+        indexEntry = indexEntry.replace("\n", "");
+        return readFile("git/objects", "index").contains(indexEntry);
+        //If I cared, I could implement Boyer-Moore or KMP to make this fast
+    }
+
+    public static boolean isIndexEmpty(){
+        return readFile("git/objects", "index").equals("");
+    }
+
+    public static void index(String filePath, String fileName){ //assumes not already there!
+        String content = readFile(filePath, fileName);
+        String hash = hash(content);    
+        String addition = (isIndexEmpty() ? "" : "\n") + hash + " " + getPath(filePath, fileName);
+        if (alreadyIndexed(addition)){
+            return;
+        }
+        appendToFile("git/objects", "index", addition);
+    }
+
     public static void main(String[] args){
         intializeRepo();
-        System.out.println(hashFile("git/objects", "index"));
-        blobify("git/objects", "index");
+        blobify("git/objects", "HEAD");
+        index("git/objects", "HEAD");
     }
 }
