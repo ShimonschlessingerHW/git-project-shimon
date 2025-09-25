@@ -35,3 +35,9 @@ Fixed a bug in initializeRepo to ensure that if, e.g, a file were named "objects
 GP 2.2.1
 
 hashTester: tests various different file value on the "index" file and running the hashFile method on it.
+
+--
+
+GP 2.4
+
+index: takes in filePath to an ORIGINAL text file and updates the index fiel with its BLOB. Uses a helper method "alreadyIndexed" to detect if this entry has already been made ot prevent duplicate entries.
