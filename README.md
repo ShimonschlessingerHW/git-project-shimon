@@ -41,3 +41,9 @@ hashTester: tests various different file value on the "index" file and running t
 GP 2.4
 
 index: takes in filePath to an ORIGINAL text file and updates the index fiel with its BLOB. Uses a helper method "alreadyIndexed" to detect if this entry has already been made ot prevent duplicate entries.
+
+--
+
+GP 2.3.1
+
+blobTester: Makes a test. folder with three subfiles and BLOBs them. Then programatically verifies that they exist in the objects folder with the correct title and body.
