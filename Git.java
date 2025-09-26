@@ -75,6 +75,11 @@ public class Git {
         }
     }
 
+    public static void cleanGit(){
+        deleteDirectory(null, "git");
+        intializeRepo();
+    }
+
     public static String readFile(String filePath, String fileName){
         String path = getPath(filePath, fileName);
         StringBuilder sb = new StringBuilder();

@@ -171,5 +171,6 @@ public class Tester {
         hashTester();
         blobTester();
         indexTester();
+        Git.cleanGit();
     }
 }
