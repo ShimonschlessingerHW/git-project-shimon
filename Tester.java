@@ -82,8 +82,8 @@ public class Tester {
 
     }
 
-    public static void blobTester(){
-        System.out.print("BLOB Tester: ");
+    public static void blobTesterUncompressed(){
+        System.out.print("BLOB Tester Uncompressed: ");
         //make test files
         Git.makeDirectory(null, "testFiles");
         Git.makeFile("testFiles", "file1");
@@ -122,6 +122,56 @@ public class Tester {
 
         Git.deleteDirectory(null, "testFiles");
         System.out.println("PASSED");
+    }
+
+    public static void blobTesterCompressed(){
+        System.out.print("BLOB Tester Compressed: ");
+        //make test files
+        Git.makeDirectory(null, "testFiles");
+        Git.makeFile("testFiles", "file1");
+        Git.makeFile("testFiles", "file2");
+        Git.makeFile("testFiles", "file3");
+        //file1 stays blank
+        Git.writeToFile("testFiles", "file2", "hello");
+        Git.writeToFile("testFiles", "file3", "SOMETHING ELSE?!");
+
+        //test 1
+        Git.blobify("testFiles", "file1");
+        String expectedHash = Git.hash("");
+        if (!Git.fileExists("git/objects", expectedHash) || !Git.readFile("git/objects", expectedHash).equals(Git.compress(""))){
+            Git.deleteDirectory(null, "testFiles");
+            System.out.println("FAILED 1");
+            return; 
+        }
+
+        //test 2
+        Git.blobify("testFiles", "file2");
+        expectedHash = Git.hash("hello");
+        if (!Git.fileExists("git/objects", expectedHash) || !Git.readFile("git/objects", expectedHash).equals(Git.compress("hello"))){
+            Git.deleteDirectory(null, "testFiles");
+            System.out.println("FAILED 2"); 
+            return;
+        }
+
+        //test 3
+        Git.blobify("testFiles", "file3");
+        expectedHash = Git.hash("SOMETHING ELSE?!");
+        if (!Git.fileExists("git/objects", expectedHash) || !Git.readFile("git/objects", expectedHash).equals(Git.compress("SOMETHING ELSE?!"))){
+            Git.deleteDirectory(null, "testFiles");
+            System.out.println("FAILED 3"); 
+            return;
+        } 
+
+        Git.deleteDirectory(null, "testFiles");
+        System.out.println("PASSED");
+    }
+
+    public static void blobTester(){
+        if (Git.COMPRESSING){
+            blobTesterCompressed();
+        } else {
+            blobTesterUncompressed();
+        }
     }
 
     public static void indexTester(){

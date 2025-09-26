@@ -59,3 +59,10 @@ indexTester: Does the exact same thing as blobTester but verifies everything exi
 GP 2.4.2
 
 cleanGit: Fully resets the git directory, removing all objects fiels and resetting the HEAD and index file. Does this by just deleting the whole folder and remaking it. Resets git folder to have empty index and HEAD files as well as deleting all extraneous BLOB files.
+
+-- 
+
+GP 2.3.2
+
+compress: takes String and outputs a compressed version of it using zip
+decompress: takes a compressed String and returns the original
