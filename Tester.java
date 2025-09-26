@@ -98,7 +98,8 @@ public class Tester {
         String expectedHash = Git.hash("");
         if (!Git.fileExists("git/objects", expectedHash) || !Git.readFile("git/objects", expectedHash).equals("")){
             Git.deleteDirectory(null, "testFiles");
-            System.out.println("FAILED 1"); 
+            System.out.println("FAILED 1");
+            return; 
         }
 
         //test 2
@@ -107,6 +108,7 @@ public class Tester {
         if (!Git.fileExists("git/objects", expectedHash) || !Git.readFile("git/objects", expectedHash).equals("hello")){
             Git.deleteDirectory(null, "testFiles");
             System.out.println("FAILED 2"); 
+            return;
         }
 
         //test 3
@@ -115,15 +117,59 @@ public class Tester {
         if (!Git.fileExists("git/objects", expectedHash) || !Git.readFile("git/objects", expectedHash).equals("SOMETHING ELSE?!")){
             Git.deleteDirectory(null, "testFiles");
             System.out.println("FAILED 3"); 
+            return;
         } 
 
         Git.deleteDirectory(null, "testFiles");
         System.out.println("PASSED");
-    } 
+    }
+
+    public static void indexTester(){
+        System.out.print("Index Tester: ");
+        //make test files
+        Git.makeDirectory(null, "testFiles");
+        Git.makeFile("testFiles", "file1");
+        Git.makeFile("testFiles", "file2");
+        Git.makeFile("testFiles", "file3");
+        //file1 stays blank
+        Git.writeToFile("testFiles", "file2", "hello");
+        Git.writeToFile("testFiles", "file3", "SOMETHING ELSE?!");
+
+        //test 1
+        Git.index("testFiles", "file1");
+        String indexEntry = Git.hash("") + " testFiles/file1";
+        if (!Git.alreadyIndexed(indexEntry)){
+            Git.deleteDirectory(null, "testFiles");
+            System.out.println("FAILED 1"); 
+            return;
+        }
+
+        //test 2
+        Git.index("testFiles", "file2");
+        indexEntry = Git.hash("hello") + " testFiles/file2";
+        if (!Git.alreadyIndexed(indexEntry)){
+            Git.deleteDirectory(null, "testFiles");
+            System.out.println("FAILED 2"); 
+            return;
+        }
+
+        //test 3
+        Git.index("testFiles", "file3");
+        indexEntry = Git.hash("SOMETHING ELSE?!") + " testFiles/file3";
+        if (!Git.alreadyIndexed(indexEntry)){
+            Git.deleteDirectory(null, "testFiles");
+            System.out.println("FAILED 3");
+            return;
+        } 
+
+        Git.deleteDirectory(null, "testFiles");
+        System.out.println("PASSED");
+    }
 
     public static void main(String[] args){
         initializationTester();
         hashTester();
         blobTester();
+        indexTester();
     }
 }
