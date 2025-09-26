@@ -53,3 +53,9 @@ blobTester: Makes a test folder with three subfiles and BLOBs them. Then program
 GP 2.4.1
 
 indexTester: Does the exact same thing as blobTester but verifies everything exists in hte index file
+
+--
+
+GP 2.4.2
+
+cleanGit: Fully resets the git directory, removing all objects fiels and resetting the HEAD and index file. Does this by just deleting the whole folder and remaking it. Resets git folder to have empty index and HEAD files as well as deleting all extraneous BLOB files.
