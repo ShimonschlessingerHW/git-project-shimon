@@ -46,4 +46,10 @@ index: takes in filePath to an ORIGINAL text file and updates the index fiel wit
 
 GP 2.3.1
 
-blobTester: Makes a test. folder with three subfiles and BLOBs them. Then programatically verifies that they exist in the objects folder with the correct title and body.
+blobTester: Makes a test folder with three subfiles and BLOBs them. Then programmatically verifies that they exist in the objects folder with the correct title and body.
+
+--
+
+GP 2.4.1
+
+indexTester: Does the exact same thing as blobTester but verifies everything exists in hte index file
