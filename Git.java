@@ -1,14 +1,13 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-
+import java.util.Base64;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 public class Git {
+    public static final boolean COMPRESSING = true;
+    
     public static String getPath(String filePath, String folderName){
         return (filePath == null ? "" : filePath + "/") + folderName;
     }
@@ -98,6 +97,10 @@ public class Git {
         return sb.toString();
     }
 
+    public static String readFileCompressed(String filePath, String fileName){
+        return null;
+    }
+
     public static void writeToFile(String filePath, String fileName, String content){
         String path = getPath(filePath, fileName);
         try (FileWriter writer = new FileWriter(path)) {
@@ -105,6 +108,10 @@ public class Git {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void writeToFileCompressed(String filePath, String fileName, String content){
+
     }
 
     public static void appendToFile(String filePath, String fileName, String content){
@@ -159,13 +166,15 @@ public class Git {
         String content = readFile(filePath, fileName);
         String hash = hash(content);
         makeFile("git/objects", hash);
+        if (COMPRESSING){
+            content = compress(content);
+        }
         writeToFile("git/objects", hash, content);
     }
 
     public static boolean alreadyIndexed(String indexEntry){
         indexEntry = indexEntry.replace("\n", "");
         return readFile("git/objects", "index").contains(indexEntry);
-        //If I cared, I could implement Boyer-Moore or KMP to make this fast
     }
 
     public static boolean isIndexEmpty(){
@@ -180,6 +189,32 @@ public class Git {
             return;
         }
         appendToFile("git/objects", "index", addition);
+    }
+
+    public static String compress(String input) {
+        byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
+        Deflater deflater = new Deflater();
+        deflater.setInput(inputBytes);
+        deflater.finish();
+        byte[] buffer = new byte[1024];
+        int compressedLength = deflater.deflate(buffer);
+        deflater.end();
+        return Base64.getEncoder().encodeToString(java.util.Arrays.copyOf(buffer, compressedLength));
+    }
+
+    public static String decompress(String compressedBase64) {
+        byte[] compressedBytes = Base64.getDecoder().decode(compressedBase64);
+        Inflater inflater = new Inflater();
+        inflater.setInput(compressedBytes);
+        byte[] buffer = new byte[1024];
+        try {
+            int decompressedLength = inflater.inflate(buffer);
+            inflater.end();
+            return new String(buffer, 0, decompressedLength, StandardCharsets.UTF_8);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static void main(String[] args){
