@@ -184,7 +184,7 @@ public class Git {
     public static void index(String filePath, String fileName){ //assumes not already there!
         String content = readFile(filePath, fileName);
         String hash = hash(content);    
-        String addition = (isIndexEmpty() ? "" : "\n") + hash + " " + getPath(filePath, fileName);
+        String addition = (isIndexEmpty() ? "" : "\n") + "blob " + hash + " " + getPath(filePath, fileName);
         if (alreadyIndexed(addition)){
             return;
         }
@@ -218,8 +218,14 @@ public class Git {
     }
 
     public static void main(String[] args){
+        cleanGit();
         intializeRepo();
-        blobify("git/objects", "HEAD");
-        index("git/objects", "HEAD");
+        makeFile(null, "file");
+        blobify(null, "file");
+        index(null, "file");
+        writeToFile(null, "file", "hello");
+        blobify(null, "file");
+        index(null, "file");
+        deleteFile(null, "file");
     }
 }
