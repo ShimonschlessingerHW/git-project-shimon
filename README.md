@@ -66,3 +66,9 @@ GP 2.3.2
 
 compress: takes String and outputs a compressed version of it using zip
 decompress: takes a compressed String and returns the original
+
+--
+
+GP 3.2
+
+makeTree: from file path, recursively creates tree by makign subtrees and blobifying subfiles. returns the name of the hash!
