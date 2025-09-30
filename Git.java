@@ -6,7 +6,7 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 public class Git {
-    public static final boolean COMPRESSING = true;
+    public static final boolean COMPRESSING = !true;
     
     public static String getPath(String filePath, String folderName){
         return (filePath == null ? "" : filePath + "/") + folderName;
@@ -217,15 +217,41 @@ public class Git {
         }
     }
 
+
+    
+    public static String makeTree(String filePath, String fileName){ //returns hash value
+        String path = getPath(filePath, fileName);
+        File dir = new File(path);
+        if (!dir.exists() || !dir.isDirectory()){
+            throw new IllegalArgumentException();
+        }
+        StringBuilder sb = new StringBuilder();
+        for (File subfile : dir.listFiles()) {
+            String subpath = subfile.getParent();
+            String subname = subfile.getName();
+            String newEntry = new String();
+            if (subfile.isFile()){
+                blobify(subpath, subname);
+                newEntry = "blob " + hashFile(subpath, subname) + " " + getPath(subpath, subname);
+            } else if (subfile.isDirectory()){
+                String subtreeHash = makeTree(subpath, subname);
+                newEntry = "tree " + subtreeHash + " " + getPath(subpath, subname);
+            }
+            sb.append(newEntry);
+            sb.append("\n");
+        }
+        sb.deleteCharAt(sb.length() - 1); //removes terminal new line
+        
+        String treeContents = sb.toString();
+        String treeHash = hash(treeContents);
+        makeFile("git/objects", treeHash);
+        writeToFile("git/objects", treeHash, treeContents);
+        return treeHash;
+    }
+
     public static void main(String[] args){
         cleanGit();
         intializeRepo();
-        makeFile(null, "file");
-        blobify(null, "file");
-        index(null, "file");
-        writeToFile(null, "file", "hello");
-        blobify(null, "file");
-        index(null, "file");
-        deleteFile(null, "file");
+        makeTree(null, "A");
     }
 }
