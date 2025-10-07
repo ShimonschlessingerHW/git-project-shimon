@@ -1,9 +1,15 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Stack;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
+
+//LOOK AT TOP OF README FOR AN IMPORTANT EXPLANATION!
 
 public class Git {
     public static final boolean COMPRESSING = !true;
@@ -172,9 +178,8 @@ public class Git {
         writeToFile("git/objects", hash, content);
     }
 
-    public static boolean alreadyIndexed(String indexEntry){
-        indexEntry = indexEntry.replace("\n", "");
-        return readFile("git/objects", "index").contains(indexEntry);
+    public static boolean alreadyIndexed(String str){
+        return readFile("git/objects", "index").contains(str);
     }
 
     public static boolean isIndexEmpty(){
@@ -182,13 +187,23 @@ public class Git {
     }
 
     public static void index(String filePath, String fileName){ //assumes not already there!
-        String content = readFile(filePath, fileName);
-        String hash = hash(content);    
-        String addition = (isIndexEmpty() ? "" : "\n") + "blob " + hash + " " + getPath(filePath, fileName);
-        if (alreadyIndexed(addition)){
-            return;
+        String path = getPath(filePath, fileName);
+        String entry = hashFile(filePath, fileName) + " " + path;
+        if (alreadyIndexed(entry)){
+            //already entirely in there; do nothing
+        } else if (alreadyIndexed(path)){
+            //updating file
+            String indexFile = readFile("git/objects", "index");
+            int pathIndex = indexFile.indexOf(path);
+            int hashIndex = indexFile.substring(0, pathIndex).lastIndexOf("\n") + 1;
+            String newFile = indexFile.substring(0, hashIndex) + entry + indexFile.substring(pathIndex + path.length());
+            writeToFile("git/objects", "index", newFile);
+        } else {
+            if (!isIndexEmpty()){
+                appendToFile("git/objects", "index", "\n");
+            }
+            appendToFile("git/objects", "index", entry);
         }
-        appendToFile("git/objects", "index", addition);
     }
 
     public static String compress(String input) {
@@ -216,8 +231,6 @@ public class Git {
             return null;
         }
     }
-
-
     
     public static String makeTree(String filePath, String fileName){ //returns hash value
         String path = getPath(filePath, fileName);
@@ -249,9 +262,125 @@ public class Git {
         return treeHash;
     }
 
+    //IGNORE: Incorrect programming attempt
+    
+    // public static void makeIndexTree(){
+    //     String indexFile = readFile("git/objects", "index");
+    //     String[] entriesArr = indexFile.split("\n");
+    //     Stack<String> entries = new Stack<String>();
+    //     for (int i = 0; i < entriesArr.length; i++){
+    //         entries.add("blob " + entriesArr[i]);
+    //     }
+    //     entries.sort(Comparator.comparing((String s) -> s.split(" ")[2]).reversed());        
+        
+    //     while (entries.size() > 0){
+    //         //above sorts by depth (ie. number of /s) to make sure subfolders get done first.
+    //         String topPath = entries.peek().split(" ")[2];
+    //         if (topPath.lastIndexOf("/") == -1){
+    //             //no subdirectories; make root file for it
+    //             //MAKE ROOT FILE
+    //             String rootEntry = entries.pop();
+    //             String blobName = hash(rootEntry);
+    //             makeFile(null, blobName);
+    //             writeToFile(null, blobName, rootEntry);
+    //         }
+    //         String newDir = topPath.substring(0, topPath.lastIndexOf("/"));
+    //         StringBuilder treeFile = new StringBuilder();
+    //         while (entries.size() > 0){
+    //             String nextPath = entries.peek().split(" ")[2];
+    //             if (!nextPath.contains(newDir)){
+    //                 break;
+    //             }
+    //             treeFile.append(entries.pop());
+    //             treeFile.append("\n");
+    //         }
+    //         if (treeFile.length() > 0){
+    //             treeFile.deleteCharAt(treeFile.length() - 1);
+    //         }
+    //         String treeContent = treeFile.toString();
+    //         String blobName = hash(treeContent);
+    //         makeFile("git/objects", blobName);
+    //         writeToFile("git/objects", blobName, treeContent);
+    //         entries.push("tree " + blobName + " " + newDir);
+    //     }
+    // }
+
+    //NOTE: Does not automatically BLOB everything inside of it!
+    //That should have been done when indexed anyway.
+    public static void makeIndexTree(){
+        StringBuilder rootTreeContents = new StringBuilder();
+        String indexFile = readFile("git/objects", "index");
+        String[] entriesArr = indexFile.split("\n");
+        ArrayList<String> entries = new ArrayList<String>();
+        HashSet<String> directories = new HashSet<String>();
+        for (int i = 0; i < entriesArr.length; i++){
+            String path = entriesArr[i].split(" ")[1]; //no tree/blob prefix yet
+            if (path.contains("/")){
+                String directory = path.substring(0, path.indexOf("/"));
+                directories.add(directory);
+                entries.add("blob " + entriesArr[i]);
+            } else { //is a file
+                rootTreeContents.append("blob " + entriesArr[i]);
+                rootTreeContents.append("\n");
+            }
+        }
+        for (String directory : directories){
+            String treeHash = makeIndexTreeHelper(entries, directory);
+            rootTreeContents.append("tree " + treeHash + " " + directory);
+            rootTreeContents.append("\n");
+        }
+        if (rootTreeContents.length() > 0){
+            rootTreeContents.deleteCharAt(rootTreeContents.length() - 1);
+        }
+        String contents = rootTreeContents.toString();
+        String hash = hash(contents);
+        makeFile(null, hash);
+        writeToFile(null, hash, contents);
+    }
+
+    //returns tree hash
+    public static String makeIndexTreeHelper(ArrayList<String> entries, String directoryPrefix){
+        ArrayList<String> subentries = new ArrayList<String>();
+        for (String entry : entries){
+            String path = entry.split(" ")[2];
+            if (path.contains(directoryPrefix)){
+                subentries.add(entry);
+            }
+        }
+        HashSet<String> treeEntryRows = new HashSet<String>(); //get only unqiue adds
+        for (String subentry : subentries){
+            String subpath = subentry.split(" ")[2].substring(directoryPrefix.length() + 1);
+            if (subpath.contains("/")){ //a directory
+                String firstFolder = subpath.substring(0, subpath.indexOf("/"));
+                String subTreeHash = makeIndexTreeHelper(subentries, directoryPrefix + "/" + firstFolder);
+                treeEntryRows.add("tree " + subTreeHash + " " + directoryPrefix + "/" + firstFolder);
+            } else { //a file
+                treeEntryRows.add(subentry); //already formatted nicely
+            }
+        }
+        StringBuilder entryContentSB = new StringBuilder();
+        for (String s : treeEntryRows){
+            entryContentSB.append(s);
+            entryContentSB.append("\n");
+        }
+        if (entryContentSB.length() > 0){
+            entryContentSB.deleteCharAt(entryContentSB.length() - 1);
+        }
+        String entryContent = entryContentSB.toString();
+        String treeHash = hash(entryContent);
+        makeFile("git/objects", treeHash);
+        writeToFile("git/objects", treeHash, entryContent);
+        return treeHash;
+    }
+
     public static void main(String[] args){
         cleanGit();
         intializeRepo();
-        makeTree(null, "A");
+        index("A/B/D", "f3");
+        index("A/B", "f2");
+        index("A/C", "f4");
+        index("A", "f1");
+        index(null, ".gitignore");
+        makeIndexTree();
     }
 }

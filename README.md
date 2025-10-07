@@ -1,3 +1,16 @@
+Bad Design Choices:
+For some awful reason, I chose to always pass two parameters to each function for the file path (sorry!). They are called "filePath" and "fileName/folderName."
+The file path refers to how to get *to* the file, and the file/folder name refers to the name of said file itself. If the file is in the root directory, "filePath" is null. 
+Here are some examples:
+"git/objects/index" --> filePath: "git/objects" and fileName: "index"
+".gitignore" --> filePath: null and fileName: ".gitignore"
+"git/objects" --> filePath: "git" and folderName: "objects"
+
+To get from these two parameters to the full name used in the File class, use the "getPath" method.
+In the opposite direction, given a full file path, if you need to extract these two parameters, use the .getParent() and .getName() methods already built into the File class.
+
+--
+
 GP 2.1
 
 Directory Exists: Takes a file path and the directory name and checks existence
