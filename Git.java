@@ -307,7 +307,7 @@ public class Git {
 
     //NOTE: Does not automatically BLOB everything inside of it!
     //That should have been done when indexed anyway.
-    public static void makeIndexTree(){
+    public static String makeIndexTree(){
         StringBuilder rootTreeContents = new StringBuilder();
         String indexFile = readFile("git/objects", "index");
         String[] entriesArr = indexFile.split("\n");
@@ -336,6 +336,7 @@ public class Git {
         String hash = hash(contents);
         makeFile(null, hash);
         writeToFile(null, hash, contents);
+        return hash;
     }
 
     //returns tree hash

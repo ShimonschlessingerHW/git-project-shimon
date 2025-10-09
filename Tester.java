@@ -215,12 +215,52 @@ public class Tester {
         Git.deleteDirectory(null, "testFiles");
         System.out.println("PASSED");
     }
+    public static void indexTreeTester(){
+        System.out.println("Index Tree Test");
+        //make a bunch of files and folders to test different combinations of files and folders
+        Git.intializeRepo();
+        Git.makeDirectory(null, "indexTreeTest");
+        Git.makeDirectory("indexTreeTest", "firstLayer");
+        Git.makeDirectory("firstLayer", "secondLayer");
+        Git.makeDirectory("indexTreeTest", "altLayer");
+        Git.makeFile("indexTreeTest", "testFile1");
+        Git.blobify("indexTreetest", "testFile1");
+        Git.index("indexTreeTest", "testFile1");
+        Git.makeFile("indexTreeTest", "testFile2");
+        Git.blobify("indexTreetest", "testFile2");
+        Git.index("indexTreeTest", "testFile2");
+        Git.makeFile("indexTreeTest/firstLayer", "testFile3");
+        Git.blobify("indexTreetest/firstLayer", "testFile3");
+        Git.index("indexTreeTest/firstLayer", "testFile3");
+        Git.makeFile("indexTreeTest/firstlayer/secondLayer", "testFile4");
+        Git.blobify("indexTreeTest/firstlayer/secondLayer", "testFile4");
+        Git.index("indexTreeTest/firstlayer/secondLayer", "testFile4");
+        Git.makeFile("indexTreeTest/altLayer", "testFile5");
+        Git.blobify("indexTreeTest/altLayer", "testFile5");
+        Git.index("indexTreeTest/altLayer", "testFile5");
+        recursiveTreeTest(Git.makeIndexTree());
+    }
+    public static void recursiveTreeTest(String treePath){
+        String contents = Git.readFile("git/objects", treePath);
+        String [] contentsArr = contents.split("\n");
+        for(String e : contentsArr){
+            if(e.split(" ")[1].equals("tree")){
+                recursiveTreeTest(e.split(" ")[2]);
+            }
+            else{
+                if(Git.fileExists("git/objects", e.split(" ")[2])){
+                    System.out.println("File "+e.split(" ")[3]+" correctly blobbed, indexed, and treed");
+                }
+            }
+        }
+    }
 
     public static void main(String[] args){
-        initializationTester();
-        hashTester();
-        blobTester();
-        indexTester();
+        // initializationTester();
+        // hashTester();
+        // blobTester();
+        // indexTester();
+        indexTreeTester();
         Git.cleanGit();
     }
 }
