@@ -85,3 +85,10 @@ decompress: takes a compressed String and returns the original
 GP 3.2
 
 makeTree: from file path, recursively creates tree by makign subtrees and blobifying subfiles. returns the name of the hash!
+
+--
+
+GP 4.1
+
+makeIndexTree now returns the hash of the root tree
+ʕ●.●ʔ
