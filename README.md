@@ -91,4 +91,10 @@ makeTree: from file path, recursively creates tree by makign subtrees and blobif
 GP 4.1
 
 makeIndexTree now returns the hash of the root tree
-ʕ●.●ʔ
+
+--
+
+GP 4.2
+
+makeCommit: Generates a new commit file by calling makeIndexTree to make a new root hash and prompting the user for the author name and commit message. appends the HEAD with the commit's hash
+retriveLastCommit: reads the HEAD (which shoudl have the most recent commit hash) CHANGE THIS IF ANY OTHER STUFF IS IN THE HEAD FILE
