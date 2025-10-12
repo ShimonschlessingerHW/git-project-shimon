@@ -98,3 +98,12 @@ GP 4.2
 
 makeCommit: Generates a new commit file by calling makeIndexTree to make a new root hash and prompting the user for the author name and commit message. appends the HEAD with the commit's hash
 retriveLastCommit: reads the HEAD (which shoudl have the most recent commit hash) CHANGE THIS IF ANY OTHER STUFF IS IN THE HEAD FILE
+
+--
+
+GP 4.3
+GitWrapper - new wrapper class for Git
+init: calls Git.initRepo
+add: indexes and blobs the filepath given
+commit: copy of Git.makeCommit without the scanner
+checkout: WIP (I'm not quite sure how it's supposed to work)
