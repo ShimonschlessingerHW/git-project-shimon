@@ -85,3 +85,34 @@ decompress: takes a compressed String and returns the original
 GP 3.2
 
 makeTree: from file path, recursively creates tree by makign subtrees and blobifying subfiles. returns the name of the hash!
+
+--
+
+GP 4.1
+
+makeIndexTree now returns the hash of the root tree
+
+--
+
+GP 4.2
+
+makeCommit: Generates a new commit file by calling makeIndexTree to make a new root hash and prompting the user for the author name and commit message. appends the HEAD with the commit's hash
+retriveLastCommit: reads the HEAD (which shoudl have the most recent commit hash) CHANGE THIS IF ANY OTHER STUFF IS IN THE HEAD FILE
+
+--
+
+GP 4.3
+
+GitWrapper - new wrapper class for Git
+init: calls Git.initRepo
+add: indexes and blobs the filepath given
+commit: copy of Git.makeCommit without the scanner
+checkout: WIP (I'm not quite sure how it's supposed to work)
+
+--
+
+Final Testing + Extras
+
+FIXED: HEAD is no longer in the objects folder
+FIXED: Date no longer throws exceptions when making commits
+full wraper test implemented

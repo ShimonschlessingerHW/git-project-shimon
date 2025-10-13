@@ -1,13 +1,15 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Stack;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
+import java.time.*;
+import java.time.format.*;
 
 //LOOK AT TOP OF README FOR AN IMPORTANT EXPLANATION!
 
@@ -38,7 +40,10 @@ public class Git {
         File newDir = new File(path);
         newDir.mkdir();
     }
-
+    //IF THE HEAD EVER HAS STUFF OTHER THAN THE LATEST COMMIT, EDIT THIS METHOD
+    public static String retrieveLatestCommit(){
+        return readFile("git", "HEAD");
+    }
     private static void deleteDirectory(File file)
     {
         for (File subfile : file.listFiles()) {
@@ -163,9 +168,9 @@ public class Git {
 
         deleteDirectory("git", "index"); //in case "cloggs" options
         makeFile("git/objects", "index");
-
+        //FIXED: THE HEAD FILE ISN'T SUPPOSED TO BE IN THE OBEJCTS FOLDER
         deleteDirectory("git", "HEAD"); //in case "cloggs" options
-        makeFile("git/objects", "HEAD");
+        makeFile("git", "HEAD");
     }
 
     public static void blobify(String filePath, String fileName){
@@ -307,7 +312,7 @@ public class Git {
 
     //NOTE: Does not automatically BLOB everything inside of it!
     //That should have been done when indexed anyway.
-    public static void makeIndexTree(){
+    public static String makeIndexTree(){
         StringBuilder rootTreeContents = new StringBuilder();
         String indexFile = readFile("git/objects", "index");
         String[] entriesArr = indexFile.split("\n");
@@ -334,8 +339,9 @@ public class Git {
         }
         String contents = rootTreeContents.toString();
         String hash = hash(contents);
-        makeFile(null, hash);
-        writeToFile(null, hash, contents);
+        makeFile("git/objects", hash);
+        writeToFile("git/objects", hash, contents);
+        return hash;
     }
 
     //returns tree hash
@@ -372,7 +378,28 @@ public class Git {
         writeToFile("git/objects", treeHash, entryContent);
         return treeHash;
     }
-
+    public static String makeCommit(){
+        StringBuilder outputSB = new StringBuilder();
+        outputSB.append("tree: "+makeIndexTree()+"\n");
+        outputSB.append("parent: "+retrieveLatestCommit()+"\n");
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter author name:");
+        outputSB.append("author: "+sc.nextLine()+"\n");
+        sc.reset();
+        //i hope geeksForGeeks was right about what this code does
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter validDateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        outputSB.append("date: "+ localDateTime.format(validDateTimeFormatter) + "\n");
+        System.out.println("Enter commit message:");
+        outputSB.append("message: "+sc.nextLine());
+        sc.close();
+        String commitHash = hash(outputSB.toString());
+        makeFile("git/objects", commitHash);
+        writeToFile("git/objects", commitHash, outputSB.toString());
+        // change this if more info needs to be stored on the HEAD
+        writeToFile("git", "HEAD", commitHash);
+        return commitHash;
+    }
     public static void main(String[] args){
         cleanGit();
         intializeRepo();
@@ -381,6 +408,6 @@ public class Git {
         index("A/C", "f4");
         index("A", "f1");
         index(null, ".gitignore");
-        makeIndexTree();
+        makeIndexTree();   
     }
 }
