@@ -102,8 +102,17 @@ retriveLastCommit: reads the HEAD (which shoudl have the most recent commit hash
 --
 
 GP 4.3
+
 GitWrapper - new wrapper class for Git
 init: calls Git.initRepo
 add: indexes and blobs the filepath given
 commit: copy of Git.makeCommit without the scanner
 checkout: WIP (I'm not quite sure how it's supposed to work)
+
+--
+
+Final Testing + Extras
+
+FIXED: HEAD is no longer in the objects folder
+FIXED: Date no longer throws exceptions when making commits
+full wraper test implemented

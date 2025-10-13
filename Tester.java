@@ -219,26 +219,29 @@ public class Tester {
         System.out.println("Index Tree Test");
         //make a bunch of files and folders to test different combinations of files and folders
         Git.intializeRepo();
-        Git.makeDirectory(null, "indexTreeTest");
-        Git.makeDirectory("indexTreeTest", "firstLayer");
-        Git.makeDirectory("firstLayer", "secondLayer");
-        Git.makeDirectory("indexTreeTest", "altLayer");
-        Git.makeFile("indexTreeTest", "testFile1");
+        makeLargeFileSystem();
         Git.blobify("indexTreetest", "testFile1");
         Git.index("indexTreeTest", "testFile1");
-        Git.makeFile("indexTreeTest", "testFile2");
         Git.blobify("indexTreetest", "testFile2");
         Git.index("indexTreeTest", "testFile2");
-        Git.makeFile("indexTreeTest/firstLayer", "testFile3");
         Git.blobify("indexTreetest/firstLayer", "testFile3");
         Git.index("indexTreeTest/firstLayer", "testFile3");
-        Git.makeFile("indexTreeTest/firstlayer/secondLayer", "testFile4");
         Git.blobify("indexTreeTest/firstlayer/secondLayer", "testFile4");
         Git.index("indexTreeTest/firstlayer/secondLayer", "testFile4");
-        Git.makeFile("indexTreeTest/altLayer", "testFile5");
         Git.blobify("indexTreeTest/altLayer", "testFile5");
         Git.index("indexTreeTest/altLayer", "testFile5");
         recursiveTreeTest(Git.makeIndexTree());
+    }
+    public static void makeLargeFileSystem(){
+        Git.makeDirectory(null, "indexTreeTest");
+        Git.makeDirectory("indexTreeTest", "firstLayer");
+        Git.makeDirectory("indexTreeTest/firstLayer", "secondLayer");
+        Git.makeDirectory("indexTreeTest", "altLayer");
+        Git.makeFile("indexTreeTest", "testFile1");
+        Git.makeFile("indexTreeTest", "testFile2");
+        Git.makeFile("indexTreeTest/firstLayer", "testFile3");
+        Git.makeFile("indexTreeTest/firstLayer/secondLayer", "testFile4");
+        Git.makeFile("indexTreeTest/altLayer", "testFile5");
     }
     public static void recursiveTreeTest(String treePath){
         String contents = Git.readFile("git/objects", treePath);
@@ -254,13 +257,32 @@ public class Tester {
             }
         }
     }
-
+    public static void gitWrapperTest(){
+        GitWrapper git = new GitWrapper();
+        System.out.println("Full Wrapper Test Started");
+        System.out.println("Testing Repo Initialization");
+        git.init();
+        if (Git.fileExists("git/objects", "index") && Git.fileExists("git/objects", "HEAD") 
+        && Git.directoryExists("git", "objects") && Git.directoryExists(null, "git")){
+            System.out.println("Repo initialization sucess");
+        }
+        makeLargeFileSystem();
+        System.out.println("File System created");
+        git.add("indexTreeTest/testFile1");
+        git.add("indexTreeTest/testFile2");
+        git.add("indexTreeTest/firstLayer/testFile3");
+        git.add("indexTreeTest/firstLayer/secondLayer/testFile4");
+        System.out.println("File adding sucessful");
+        String commithash = git.commit("Hunter Madden", "THIS IS A TEST");
+        System.out.println("COMMIT EXISTS: " + Git.fileExists("git/objects", commithash));
+    }
     public static void main(String[] args){
         // initializationTester();
         // hashTester();
         // blobTester();
         // indexTester();
-        indexTreeTester();
-        Git.cleanGit();
+        // indexTreeTester();
+        gitWrapperTest();
+        //Git.cleanGit();
     }
 }

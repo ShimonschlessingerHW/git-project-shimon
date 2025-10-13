@@ -53,7 +53,9 @@ public class GitWrapper {
         outputSB.append("tree: "+Git.makeIndexTree()+"\n");
         outputSB.append("parent: "+Git.retrieveLatestCommit()+"\n");
         outputSB.append("author: "+author+"\n");
-        outputSB.append("date: "+ LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")) + "\n");
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter validDateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        outputSB.append("date: "+ localDateTime.format(validDateTimeFormatter) + "\n");
         outputSB.append("message: "+message);
         String commitHash = Git.hash(outputSB.toString());
         Git.makeFile("git/objects", commitHash);
